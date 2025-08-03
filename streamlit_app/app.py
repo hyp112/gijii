@@ -7,12 +7,11 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-st.title("📄Gijii")
-st.write("会議の音声書き起こしと資料から、クライアントへ送るべき議事を自動生成します。")
+st.title("📄Gijii (議事録作成)")
 
 # --- サイドバー (設定項目) ---
 st.sidebar.header("🔑 APIキー設定")
-selected_llm = st.sidebar.radio("使用するLLMを選択", ("OpenAI (ChatGPT)", "Google (Gemini)"))
+selected_llm = st.sidebar.radio("使用するLLMを選択", ("ChatGPT-4o", "Gemini-2.5-Pro"))
 
 if selected_llm == "OpenAI (ChatGPT)":
     openai_api_key = st.sidebar.text_input("OpenAI APIキーを入力してください", type="password")
@@ -25,25 +24,29 @@ st.sidebar.header("⚙️ 会議情報の設定")
 # --- メインコンテンツ ---
 
 st.header("1. 会議参加者と役割の指定")
-st.info("クライアント役を指定すると、その方の発言が議事録作成時に特に重視されます。", icon="ℹ️")
+st.info("弊社参加者とクライアント名をそれぞれ入力してください。クライアントの発言が議事録作成時に特に重視されます。", icon="ℹ️")
 
-# 会議参加者入力
-attendees_raw = st.text_area(
-    "会議参加者名をカンマ区切りで入力してください（例: 田中部長, 鈴木さん, クライアントA社の佐藤様）",
-    height=80
+# 弊社参加者入力
+our_attendees_raw = st.text_area(
+    "弊社参加者名をカンマ区切りで入力してください（例: 田中部長, 鈴木さん, 佐藤）",
+    height=80,
+    key="our_attendees_input" # ユニークなキーを設定
 )
-# 入力された参加者名をリストに変換（後でバックエンドに渡すため）
-attendees = [a.strip() for a in attendees_raw.split(',') if a.strip()]
+# 入力された参加者名をリストに変換
+our_attendees = [a.strip() for a in our_attendees_raw.split(',') if a.strip()]
 
-# クライアント役の選択
-if attendees: # 参加者が入力されていれば選択肢を表示
-    client_name = st.selectbox(
-        "クライアント役の参加者を選択してください",
-        ["選択してください"] + attendees
-    )
-else:
-    client_name = "選択してください"
-    st.warning("会議参加者を入力すると、クライアント役を選択できるようになります。")
+# クライアント名入力
+client_name_input = st.text_input(
+    "クライアント名をカンマ区切りで入力してください（例: クライアントA社の佐藤様, 山田様）",
+    key="client_name_input" # ユニークなキーを設定
+)
+# クライアント名をリストに変換（今回のプロンプトでは重み付け対象として単一名を想定しているため、最初の1名を使う想定ですが、ここではリストで保持）
+client_attendees = [c.strip() for c in client_name_input.split(',') if c.strip()]
+
+# プロンプトに渡す変数名として、最初のクライアント名を client_name とします
+# 複数のクライアントがいる場合、必要に応じてプロンプト側で調整してください
+client_name_for_prompt = client_attendees[0] if client_attendees else ""
+
 
 st.markdown("---")
 
@@ -75,13 +78,16 @@ st.markdown("---")
 st.header("4. 議事録の生成")
 
 if st.button("議事録を生成する"):
+    # ここにバックエンドへのリクエスト処理を書きます
+    backend_url = "YOUR_CLOUD_RUN_SERVICE_URL/generate_minutes" # FastAPIのURL
 
+    # 以下、検証ロジックとリクエストデータ準備の修正
     if not (uploaded_transcript_file and uploaded_mtg_material_file):
         st.error("発話書き起こしファイルと会議資料の両方をアップロードしてください。")
-    elif not attendees:
-        st.error("会議参加者を入力してください。")
-    elif client_name == "選択してください":
-        st.error("クライアント役の参加者を選択してください。")
+    elif not our_attendees: # 弊社参加者のチェック
+        st.error("弊社参加者を入力してください。")
+    elif not client_attendees: # クライアント名のチェック
+        st.error("クライアント名を入力してください。")
     elif not meeting_format:
         st.error("議事録フォーマットを入力してください。")
     elif selected_llm == "OpenAI (ChatGPT)" and not openai_api_key:
@@ -89,28 +95,23 @@ if st.button("議事録を生成する"):
     elif selected_llm == "Google (Gemini)" and not gemini_api_key:
         st.error("Google Gemini APIキーを入力してください。")
     else:
-        # ここにバックエンドへのリクエスト処理を書きます
-        # まずはローカルのFastAPIに接続
-        backend_url = "https://gijii-backend-service-764092828828.asia-northeast1.run.app/generate_minutes"
-
-        # リクエストボディの準備
-        # FastAPIのForm型で受け取るため、ファイルとフォームデータを分ける
-        files = {
-            "transcript_file": uploaded_transcript_file.getvalue(),
-            "mtg_material_file": uploaded_mtg_material_file.getvalue()
-        }
-        data = {
-            "llm_type": selected_llm.split(' ')[0], # "OpenAI (ChatGPT)"から"OpenAI"を抽出
-            "api_key": openai_api_key if selected_llm == "OpenAI (ChatGPT)" else gemini_api_key,
-            "attendees_str": attendees_raw, # カンマ区切りのまま渡す
-            "client_name": client_name,
-            "meeting_format": meeting_format
-        }
-
         st.info("議事録を生成中...しばらくお待ちください。")
         with st.spinner("LLMが議事録を作成しています..."):
             try:
-                import requests # requestsライブラリをインポート
+                import requests
+
+                # リクエストボディの準備
+                files = {
+                    "transcript_file": uploaded_transcript_file.getvalue(),
+                    "mtg_material_file": uploaded_mtg_material_file.getvalue()
+                }
+                data = {
+                    "llm_type": selected_llm.split(' ')[0],
+                    "api_key": openai_api_key if selected_llm == "OpenAI (ChatGPT)" else gemini_api_key,
+                    "our_attendees_str": our_attendees_raw, # 弊社参加者をカンマ区切りのまま渡す
+                    "client_name": client_name_for_prompt, # プロンプト用クライアント名を渡す
+                    "meeting_format": meeting_format
+                }
 
                 response = requests.post(backend_url, files=files, data=data)
 
@@ -120,7 +121,7 @@ if st.button("議事録を生成する"):
                     st.success("議事録が生成されました！")
                     st.markdown("---")
                     st.subheader("生成された議事録")
-                    st.code(generated_minutes, language="markdown") # Markdown形式で表示
+                    st.code(generated_minutes, language="markdown")
                 else:
                     error_detail = response.json().get("detail", "不明なエラー")
                     st.error(f"議事録の生成に失敗しました。エラーコード: {response.status_code} 詳細: {error_detail}")

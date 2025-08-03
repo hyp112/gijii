@@ -38,14 +38,12 @@ async def read_root():
 
 @app.post("/generate_minutes")
 async def generate_minutes(
-    # ファイルはFastAPIのFile型で受け取る
     transcript_file: UploadFile = File(...),
     mtg_material_file: UploadFile = File(...),
-    # テキストデータはForm型で受け取る (JSONボディではなく個別のフォームフィールドとして)
     llm_type: str = Form(...),
     api_key: str = Form(...),
-    attendees_str: str = Form(...), # カンマ区切りの文字列として受け取る
-    client_name: str = Form(...),
+    our_attendees_str: str = Form(...), 
+    client_name: str = Form(...), 
     meeting_format: str = Form(...)
 ):
     try:
@@ -58,7 +56,7 @@ async def generate_minutes(
         mtg_material_text = parse_pdf(mtg_material_content)
 
         # 3. 参加者リストの整形
-        attendees = [a.strip() for a in attendees_str.split(',') if a.strip()]
+        our_attendees = [a.strip() for a in our_attendees_str.split(',') if a.strip()] # ★変
 
         # 4. LLMクライアントの初期化
         llm = LLMClient(llm_type, api_key)
@@ -75,12 +73,11 @@ async def generate_minutes(
         # 6. 議事録生成プロンプトの構築
         minutes_prompt = build_meeting_minutes_prompt(
             mtg_purpose_summary=mtg_purpose_summary,
-            attendees=attendees,
+            our_attendees=our_attendees, # ★引数名を変更
             client_name=client_name,
             transcript=transcript_text,
             meeting_format=meeting_format
         )
-        print(f"--- Minutes Generation Prompt ---:\n{minutes_prompt[:1000]}...") # デバッグ用
 
         # 7. LLMによる議事録の生成
         generated_minutes = llm.generate_text(minutes_prompt)

@@ -2,7 +2,7 @@
 
 def build_meeting_minutes_prompt(
     mtg_purpose_summary: str,
-    attendees: list[str],
+    our_attendees: list[str],
     client_name: str,
     transcript: str,
     meeting_format: str
@@ -18,8 +18,8 @@ def build_meeting_minutes_prompt(
 {mtg_purpose_summary}
 
 # 会議情報
-会議参加者: {', '.join(attendees)}
-クライアント役: {client_name}
+弊社参加者: {', '.join(our_attendees)} # ★表示も変更
+クライアント: {client_name} # ★表示も変更
 
 # 会議の発話記録
 {transcript}
