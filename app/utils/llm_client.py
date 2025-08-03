@@ -21,13 +21,13 @@ class LLMClient:
         if self.llm_type == "OpenAI":
             try:
                 response = openai.chat.completions.create(
-                    model="gpt-3.5-turbo", # まずはgpt-3.5-turboで試します。必要に応じてgpt-4などに変更
+                    model="gpt-4o",
                     messages=[
                         {"role": "system", "content": "You are a helpful assistant for meeting minute generation."},
                         {"role": "user", "content": prompt}
                     ],
-                    max_tokens=2000, # 生成するテキストの最大トークン数。議事録の長さに応じて調整
-                    temperature=0.7 # 創造性。0.7はバランスが良い
+                    max_tokens=4000, 
+                    temperature=0.3 
                 )
                 return response.choices[0].message.content
             except openai.APIError as e:
