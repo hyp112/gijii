@@ -18,6 +18,8 @@ if selected_llm == "OpenAI (ChatGPT)":
 else:
     gemini_api_key = st.sidebar.text_input("Google Gemini APIキーを入力してください", type="password")
 
+st.sidebar.link_button("APIキーの取得方法はこちら", "https://note.com/simizu_note_ai/n/n52f02f003bdf")
+
 st.sidebar.markdown("---")
 st.sidebar.header("⚙️ 会議情報の設定")
 
