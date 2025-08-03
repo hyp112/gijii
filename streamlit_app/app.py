@@ -13,7 +13,7 @@ st.title("📄Gijii (議事録作成)")
 st.sidebar.header("🔑 APIキー設定")
 selected_llm = st.sidebar.radio("使用するLLMを選択", ("ChatGPT-4o", "Gemini-2.5-Pro"))
 
-if selected_llm == "OpenAI (ChatGPT)":
+if selected_llm == "ChatGPT-4o":
     openai_api_key = st.sidebar.text_input("OpenAI APIキーを入力してください", type="password")
 else:
     gemini_api_key = st.sidebar.text_input("Google Gemini APIキーを入力してください", type="password")
@@ -119,7 +119,7 @@ if st.button("議事録を生成する"):
                     generated_minutes = result.get("minutes", "議事録の生成に失敗しました。")
                     st.success("議事録が生成されました！")
                     st.markdown("---")
-                    st.subheader("生成された議事録")
+                    st.subheader("議事録")
                     st.code(generated_minutes, language="markdown")
                 else:
                     error_detail = response.json().get("detail", "不明なエラー")
