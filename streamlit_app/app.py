@@ -29,7 +29,7 @@ st.info("弊社参加者とクライアント名をそれぞれ入力してく�
 # 弊社参加者入力
 our_attendees_raw = st.text_area(
     "弊社参加者名をカンマ区切りで入力してください（例: 田中部長, 鈴木さん, 佐藤）",
-    height=80,
+    height=40,
     key="our_attendees_input" # ユニークなキーを設定
 )
 # 入力された参加者名をリストに変換
@@ -38,23 +38,22 @@ our_attendees = [a.strip() for a in our_attendees_raw.split(',') if a.strip()]
 # クライアント名入力
 client_name_input = st.text_input(
     "クライアント名をカンマ区切りで入力してください（例: クライアントA社の佐藤様, 山田様）",
-    key="client_name_input" # ユニークなキーを設定
+    key="client_name_input" 
 )
-# クライアント名をリストに変換（今回のプロンプトでは重み付け対象として単一名を想定しているため、最初の1名を使う想定ですが、ここではリストで保持）
+# クライアント名をリストに変換
 client_attendees = [c.strip() for c in client_name_input.split(',') if c.strip()]
 
 # プロンプトに渡す変数名として、最初のクライアント名を client_name とします
-# 複数のクライアントがいる場合、必要に応じてプロンプト側で調整してください
 client_name_for_prompt = client_attendees[0] if client_attendees else ""
 
 
 st.markdown("---")
 
-st.header("2. 議事録フォーマットの指定")
-st.info("社内規定の議事録フォーマットをここに貼り付けてください。LLMがこのフォーマットに従って議事録を生成します。", icon="📝")
+st.header("2. フォーマットの指定")
+st.info("使用したい議事録フォーマットをここに貼り付けてください。", icon="📝")
 meeting_format = st.text_area(
     "議事録のフォーマットを入力してください",
-    "例: 日時:\\n場所:\\n参加者:\\n【貴社ご依頼事項】\\n【弊社TODO】\\n主な議事と決定事項\\n決定事項1...::",
+    "例: 日時:\\n場所:\\n参加者:\\n【貴社ご依頼事項】\\n【弊社TODO】\\n主な議事と決定事項\\n決定事項1...",
     height=200
 )
 
@@ -68,7 +67,7 @@ uploaded_transcript_file = st.file_uploader(
 )
 
 uploaded_mtg_material_file = st.file_uploader(
-    "会議で使用した資料ファイル (.pdf) をアップロードしてください",
+    "会議で使用した資料スライド(.pdf) をアップロードしてください。会議の目的やゴールなど、背景の理解に使います。",
     type=["pdf"]
 )
 
@@ -79,11 +78,11 @@ st.header("4. 議事録の生成")
 
 if st.button("議事録を生成する"):
     # ここにバックエンドへのリクエスト処理を書きます
-    backend_url = "YOUR_CLOUD_RUN_SERVICE_URL/generate_minutes" # FastAPIのURL
+    backend_url = "https://gijii-backend-service-764092828828.asia-northeast1.run.app/generate_minutes"
 
     # 以下、検証ロジックとリクエストデータ準備の修正
     if not (uploaded_transcript_file and uploaded_mtg_material_file):
-        st.error("発話書き起こしファイルと会議資料の両方をアップロードしてください。")
+        st.error("発話書き起こしファイルと会議資料スライドの両方をアップロードしてください。")
     elif not our_attendees: # 弊社参加者のチェック
         st.error("弊社参加者を入力してください。")
     elif not client_attendees: # クライアント名のチェック
