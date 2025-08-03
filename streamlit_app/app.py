@@ -11,9 +11,9 @@ st.title("📄Gijii (議事録作成)")
 
 # --- サイドバー (設定項目) ---
 st.sidebar.header("🔑 APIキー設定")
-selected_llm = st.sidebar.radio("使用するLLMを選択", ("ChatGPT-4o", "Gemini-2.5-Pro"))
+selected_llm = st.sidebar.radio("使用するLLMを選択", ("OpenAI (ChatGPT)", "Gemini-2.5-Pro"))
 
-if selected_llm == "ChatGPT-4o":
+if selected_llm == "OpenAI (ChatGPT)":
     openai_api_key = st.sidebar.text_input("OpenAI APIキーを入力してください", type="password")
 else:
     gemini_api_key = st.sidebar.text_input("Google Gemini APIキーを入力してください", type="password")
@@ -106,7 +106,7 @@ if st.button("議事録を生成する"):
                 }
                 data = {
                     "llm_type": selected_llm.split(' ')[0],
-                    "api_key": openai_api_key if selected_llm == "ChatGPT-4o" else gemini_api_key,
+                    "api_key": openai_api_key if selected_llm == "OpenAI (ChatGPT)" else gemini_api_key,
                     "our_attendees_str": our_attendees_raw, # 弊社参加者をカンマ区切りのまま渡す
                     "client_name": client_name_for_prompt, # プロンプト用クライアント名を渡す
                     "meeting_format": meeting_format
