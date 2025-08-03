@@ -106,7 +106,7 @@ if st.button("議事録を生成する"):
                 }
                 data = {
                     "llm_type": selected_llm.split(' ')[0],
-                    "api_key": openai_api_key if selected_llm == "OpenAI (ChatGPT)" else gemini_api_key,
+                    "api_key": openai_api_key if selected_llm == "ChatGPT-4o" else gemini_api_key,
                     "our_attendees_str": our_attendees_raw, # 弊社参加者をカンマ区切りのまま渡す
                     "client_name": client_name_for_prompt, # プロンプト用クライアント名を渡す
                     "meeting_format": meeting_format
