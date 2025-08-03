@@ -18,14 +18,12 @@ if selected_llm == "OpenAI (ChatGPT)":
 else:
     gemini_api_key = st.sidebar.text_input("Google Gemini APIキーを入力してください", type="password")
 
-st.sidebar.link_button("APIキーの取得方法はこちら", "https://note.com/simizu_note_ai/n/n52f02f003bdf")
-
 st.sidebar.markdown("---")
-st.sidebar.header("⚙️ 会議情報の設定")
+st.sidebar.link_button("APIキーの取得方法はこちら", "https://note.com/simizu_note_ai/n/n52f02f003bdf")
 
 # --- メインコンテンツ ---
 
-st.header("1. 会議参加者と役割の指定")
+st.header("1. 会議参加者")
 st.info("弊社参加者とクライアント名をそれぞれ入力してください。クライアントの発言が議事録作成時に特に重視されます。", icon="ℹ️")
 
 # 弊社参加者入力
@@ -51,7 +49,7 @@ client_name_for_prompt = client_attendees[0] if client_attendees else ""
 
 st.markdown("---")
 
-st.header("2. フォーマットの指定")
+st.header("2. フォーマット")
 st.info("使用したい議事録フォーマットをここに貼り付けてください。", icon="📝")
 meeting_format = st.text_area(
     "議事録のフォーマットを入力してください",
