@@ -42,8 +42,8 @@ async def generate_minutes(
     mtg_material_file: UploadFile = File(...),
     llm_type: str = Form(...),
     api_key: str = Form(...),
-    our_attendees_str: str = Form(...), 
-    client_name: str = Form(...), 
+    our_attendees_str: str = Form(...),
+    client_names_str: str = Form(...),
     meeting_format: str = Form(...)
 ):
     try:
@@ -56,7 +56,9 @@ async def generate_minutes(
         mtg_material_text = parse_pdf(mtg_material_content)
 
         # 3. 参加者リストの整形
-        our_attendees = [a.strip() for a in our_attendees_str.split(',') if a.strip()] # ★変
+        # 参加者リストの整形
+        our_attendees = [a.strip() for a in our_attendees_str.split(',') if a.strip()]
+        client_names = [c.strip() for c in client_names_str.split(',') if c.strip()]
 
         # 4. LLMクライアントの初期化
         llm = LLMClient(llm_type, api_key)
@@ -73,11 +75,12 @@ async def generate_minutes(
         # 6. 議事録生成プロンプトの構築
         minutes_prompt = build_meeting_minutes_prompt(
             mtg_purpose_summary=mtg_purpose_summary,
-            our_attendees=our_attendees, # ★引数名を変更
-            client_name=client_name,
+            our_attendees=our_attendees,
+            client_names=client_names,
             transcript=transcript_text,
             meeting_format=meeting_format
         )
+
 
         # 7. LLMによる議事録の生成
         generated_minutes = llm.generate_text(minutes_prompt)

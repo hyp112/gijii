@@ -105,12 +105,12 @@ if st.button("議事録を生成する"):
                     "mtg_material_file": uploaded_mtg_material_file.getvalue()
                 }
                 data = {
-                    "llm_type": selected_llm.split(' ')[0],
-                    "api_key": openai_api_key if selected_llm == "OpenAI (ChatGPT)" else gemini_api_key,
-                    "our_attendees_str": our_attendees_raw, # 弊社参加者をカンマ区切りのまま渡す
-                    "client_name": client_name_for_prompt, # プロンプト用クライアント名を渡す
-                    "meeting_format": meeting_format
-                }
+                "llm_type": selected_llm.split(' ')[0],
+                "api_key": openai_api_key if selected_llm == "OpenAI (ChatGPT)" else gemini_api_key,
+                "our_attendees_str": our_attendees_raw,
+                "client_names_str": client_name_input, 
+                "meeting_format": meeting_format
+            }
 
                 response = requests.post(backend_url, files=files, data=data)
 

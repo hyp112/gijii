@@ -21,7 +21,7 @@ class LLMClient:
         if self.llm_type == "OpenAI":
             try:
                 response = openai.chat.completions.create(
-                    model="gpt-3.5-turbo",
+                    model="gpt-4o",
                     messages=[
                         {"role": "system", "content": "You are a helpful assistant for meeting minute generation."},
                         {"role": "user", "content": prompt}
